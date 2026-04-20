@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>0 to 1</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#C9A84C">
+
+<style>
+body{margin:0;font-family:sans-serif;background:#0D0F14;color:#fff}
+header{padding:16px;color:#C9A84C;font-size:20px}
+.card{background:#1A1E2A;margin:16px;padding:16px;border-radius:12px}
+.big{font-size:40px;font-weight:bold}
+.row{display:flex;justify-content:space-between;margin-top:10px}
+input{width:100%;padding:10px;border-radius:8px;border:none}
+</style>
+</head>
+
+<body>
+
+<header>0 to 1</header>
+
+<div class="card">
+<div>Net Worth</div>
+<div class="big" id="nw">₹0</div>
+<div id="trend"></div>
+
+<div class="row"><span>Gold</span><span id="gold">₹0</span></div>
+<div class="row"><span>Silver</span><span id="silver">₹0</span></div>
+</div>
+
+<div class="card">
+<div>AI Advisor</div>
+<div id="chat"></div>
+<input placeholder="Ask..." onkeydown="if(event.key==='Enter')askAI(this.value)">
+</div>
+
+<script>
+
+let S={
+goldRate:5800,
+silverRate:80,
+goldGrams:550,
+silverGrams:3000,
+history:[]
+};
+
+function calc(){
+let gold=S.goldRate*S.goldGrams;
+let silver=S.silverRate*S.silverGrams;
+let nw=gold+silver;
+
+document.getElementById("nw").innerText=fmt(nw);
+document.getElementById("gold").innerText=fmt(gold);
+document.getElementById("silver").innerText=fmt(silver);
+
+trend(nw);
+}
+
+function trend(nw){
+let prev=S.history[S.history.length-1];
+if(prev){
+let diff=nw-prev;
+let t=document.getElementById("trend");
+t.innerText=(diff>=0?"↑ ":"↓ ")+fmt(diff);
+t.style.color=diff>=0?"green":"red";
+}
+S.history.push(nw);
+}
+
+function askAI(q){
+q=q.toLowerCase();
+let a="Try asking about gold, net worth or advice";
+
+if(q.includes("net")) a=document.getElementById("nw").innerText;
+else if(q.includes("gold")) a=document.getElementById("gold").innerText;
+else if(q.includes("safe")) a="Keep liabilities below 40% of assets";
+else if(q.includes("improve")) a="Increase income, reduce loans, hold gold long term";
+
+document.getElementById("chat").innerHTML+="<div>> "+q+"</div><div>"+a+"</div>";
+}
+
+async function fetchRates(){
+try{
+let r=await fetch("https://api.metals.live/v1/spot");
+let d=await r.json();
+
+let g=d.find(x=>x.gold)?.gold;
+let s=d.find(x=>x.silver)?.silver;
+
+if(g) S.goldRate=Math.round((g*85)/31.1);
+if(s) S.silverRate=Math.round((s*85)/31.1);
+
+calc();
+}catch(e){}
+}
+
+function fmt(n){return "₹"+Math.round(n).toLocaleString("en-IN")}
+
+calc();
+fetchRates();
+setInterval(fetchRates,3600000);
+
+</script>
+
+<script>
+if ("serviceWorker" in navigator){
+navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+</body>
+</html>
