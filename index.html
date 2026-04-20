@@ -2,19 +2,18 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>0 to 1</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#C9A84C">
 
 <style>
 body{margin:0;font-family:sans-serif;background:#0D0F14;color:#fff}
 header{padding:16px;color:#C9A84C;font-size:20px}
-.card{background:#1A1E2A;margin:16px;padding:16px;border-radius:12px}
-.big{font-size:40px;font-weight:bold}
-.row{display:flex;justify-content:space-between;margin-top:10px}
-input{width:100%;padding:10px;border-radius:8px;border:none}
+.section{padding:16px}
+.card{background:#1A1E2A;padding:16px;border-radius:12px;margin-bottom:16px}
+.big{font-size:38px;font-weight:bold}
+.row{display:flex;justify-content:space-between;margin-top:8px}
+input{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px}
 </style>
 </head>
 
@@ -22,19 +21,49 @@ input{width:100%;padding:10px;border-radius:8px;border:none}
 
 <header>0 to 1</header>
 
+<!-- OVERVIEW -->
+<div class="section">
 <div class="card">
 <div>Net Worth</div>
 <div class="big" id="nw">₹0</div>
 <div id="trend"></div>
+</div>
+</div>
 
+<!-- ASSETS -->
+<div class="section">
+<div class="card">
+<div>Assets</div>
 <div class="row"><span>Gold</span><span id="gold">₹0</span></div>
 <div class="row"><span>Silver</span><span id="silver">₹0</span></div>
 </div>
+</div>
 
+<!-- INCOME -->
+<div class="section">
+<div class="card">
+<div>Income</div>
+<input id="income" placeholder="Enter monthly income">
+<div class="row"><span>Total</span><span id="incomeVal">₹0</span></div>
+</div>
+</div>
+
+<!-- EXPENSE -->
+<div class="section">
+<div class="card">
+<div>Expense</div>
+<input id="expense" placeholder="Enter monthly expense">
+<div class="row"><span>Total</span><span id="expenseVal">₹0</span></div>
+</div>
+</div>
+
+<!-- AI -->
+<div class="section">
 <div class="card">
 <div>AI Advisor</div>
 <div id="chat"></div>
 <input placeholder="Ask..." onkeydown="if(event.key==='Enter')askAI(this.value)">
+</div>
 </div>
 
 <script>
@@ -44,6 +73,8 @@ goldRate:5800,
 silverRate:80,
 goldGrams:550,
 silverGrams:3000,
+income:0,
+expense:0,
 history:[]
 };
 
@@ -72,15 +103,37 @@ S.history.push(nw);
 
 function askAI(q){
 q=q.toLowerCase();
-let a="Try asking about gold, net worth or advice";
 
-if(q.includes("net")) a=document.getElementById("nw").innerText;
-else if(q.includes("gold")) a=document.getElementById("gold").innerText;
-else if(q.includes("safe")) a="Keep liabilities below 40% of assets";
-else if(q.includes("improve")) a="Increase income, reduce loans, hold gold long term";
+let inc=S.income;
+let exp=S.expense;
 
-document.getElementById("chat").innerHTML+="<div>> "+q+"</div><div>"+a+"</div>";
+let ans="";
+
+if(q.includes("safe")){
+ans = exp < inc ? "You are financially stable" : "Risk: expenses > income";
 }
+else if(q.includes("improve")){
+ans="Reduce expense and increase income streams";
+}
+else if(q.includes("net")){
+ans=document.getElementById("nw").innerText;
+}
+else{
+ans="Ask about safety, improve, net worth";
+}
+
+document.getElementById("chat").innerHTML += "<div>> "+q+"</div><div>"+ans+"</div>";
+}
+
+document.getElementById("income").addEventListener("input",e=>{
+S.income=Number(e.target.value||0);
+document.getElementById("incomeVal").innerText=fmt(S.income);
+});
+
+document.getElementById("expense").addEventListener("input",e=>{
+S.expense=Number(e.target.value||0);
+document.getElementById("expenseVal").innerText=fmt(S.expense);
+});
 
 async function fetchRates(){
 try{
@@ -101,14 +154,7 @@ function fmt(n){return "₹"+Math.round(n).toLocaleString("en-IN")}
 
 calc();
 fetchRates();
-setInterval(fetchRates,3600000);
 
-</script>
-
-<script>
-if ("serviceWorker" in navigator){
-navigator.serviceWorker.register("service-worker.js");
-}
 </script>
 
 </body>
