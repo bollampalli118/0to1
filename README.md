@@ -66,3 +66,11 @@ The application provides a **single source of truth for personal financial plann
 ---
 
 ## 📁 Project Structure
+wealth-tracker/
+│
+├── index.html              # Main application (UI + logic)
+├── assets/                 # (Optional) icons, images
+├── styles/                 # (Optional) CSS files (if separated)
+├── scripts/                # (Optional) JS files (if separated)
+│
+└── README.md               # Project documentation
